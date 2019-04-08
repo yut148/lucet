@@ -166,6 +166,7 @@ impl Link {
             ))?;
         }
         let mut cmd = Command::new("strace");
+        cmd.arg("-f");
         cmd.arg(clang);
         for input in self.input.iter() {
             if !input.exists() {
