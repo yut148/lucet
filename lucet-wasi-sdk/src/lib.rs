@@ -165,9 +165,7 @@ impl Link {
                 clang.to_string_lossy().into_owned(),
             ))?;
         }
-        let mut cmd = Command::new("strace");
-        cmd.arg("-f");
-        cmd.arg(clang);
+        let mut cmd = Command::new(clang);
         for input in self.input.iter() {
             if !input.exists() {
                 Err(CompileError::FileNotFound(
