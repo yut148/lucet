@@ -15,6 +15,7 @@ RUN apt-get update \
 	software-properties-common \
 	libssl-dev \
 	pkg-config \
+	strace \
  && rm -rf /var/lib/apt/lists/*
 
 # Setting a consistent LD_LIBRARY_PATH across the entire environment prevents unnecessary Cargo
