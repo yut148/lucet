@@ -109,12 +109,14 @@ pub struct Link {
 
 impl Link {
     pub fn new<P: AsRef<Path>>(input: &[P]) -> Self {
-        Link {
+        let mut link = Link {
             input: input.iter().map(|p| PathBuf::from(p.as_ref())).collect(),
             cflags: Vec::new(),
             ldflags: Vec::new(),
             print_output: false,
-        }
+        };
+        link.with_ldflag("--no-threads");
+        link
     }
 
     pub fn cflag<S: AsRef<str>>(mut self, cflag: S) -> Self {
@@ -165,9 +167,12 @@ impl Link {
                 clang.to_string_lossy().into_owned(),
             ))?;
         }
+        /*
         let mut cmd = Command::new("strace");
         cmd.arg("-f");
         cmd.arg(clang);
+        */
+        let mut cmd = Command::new(clang);
         for input in self.input.iter() {
             if !input.exists() {
                 Err(CompileError::FileNotFound(
