@@ -427,7 +427,13 @@ impl Instance {
     pub fn set_signal_handler<H>(&mut self, handler: H)
     where
         H: 'static
-            + Fn(&Instance, &Option<TrapCode>, libc::c_int, *const siginfo_t, *const c_void) -> SignalBehavior,
+            + Fn(
+                &Instance,
+                &Option<TrapCode>,
+                libc::c_int,
+                *const siginfo_t,
+                *const c_void,
+            ) -> SignalBehavior,
     {
         self.signal_handler = Box::new(handler) as Box<SignalHandler>;
     }
