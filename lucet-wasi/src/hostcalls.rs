@@ -618,7 +618,7 @@ pub extern "C" fn __wasi_path_open(
     if nix_all_oflags.contains(OFlag::O_DSYNC) {
         needed_inheriting |= host::__WASI_RIGHT_FD_DATASYNC as host::__wasi_rights_t;
     }
-    if nix_all_oflags.intersects(OFlag::O_RSYNC | OFlag::O_SYNC) {
+    if is_sync(nix_all_oflags) {
         needed_inheriting |= host::__WASI_RIGHT_FD_SYNC as host::__wasi_rights_t;
     }
 
@@ -694,6 +694,16 @@ pub extern "C" fn __wasi_path_open(
             .map(|_| wasm32::__WASI_ESUCCESS)
             .unwrap_or_else(|e| e)
     }
+}
+
+#[cfg(target_os = "linux")]
+fn is_sync(oflags: nix::fcntl::OFlag) -> bool {
+    oflags.intersects(nix::fcntl::OFlag::O_RSYNC | OFlag::O_SYNC)
+}
+
+#[cfg(not(target_os = "linux"))]
+fn is_sync(oflags: nix::fcntl::OFlag) -> bool {
+    oflags.intersects(nix::fcntl::OFlag::O_SYNC)
 }
 
 /// Normalizes a path to ensure that the target path is located under the directory provided.

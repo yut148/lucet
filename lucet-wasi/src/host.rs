@@ -98,6 +98,24 @@ pub fn errno_from_nix(errno: nix::errno::Errno) -> __wasi_errno_t {
     e as __wasi_errno_t
 }
 
+#[cfg(target_os = "linux")]
+fn insert_o_rsync(&mut nix_flags: nix::fcntl::OFlag) {
+    nix_flags.insert(OFlag::O_RSYNC);
+}
+
+#[cfg(target_os = "linux")]
+fn contains_o_rsync(oflags: nix::fcntl::OFlag) -> bool {
+    oflags.contains(OFlag::O_RSYNC)
+}
+
+#[cfg(not(target_os = "linux"))]
+fn insert_o_rsync(_nix_flags: &mut nix::fcntl::OFlag) {}
+
+#[cfg(not(target_os = "linux"))]
+fn contains_o_rsync(_oflags: nix::fcntl::OFlag) -> bool {
+    false
+}
+
 pub fn nix_from_fdflags(fdflags: __wasi_fdflags_t) -> nix::fcntl::OFlag {
     use nix::fcntl::OFlag;
     let mut nix_flags = OFlag::empty();
@@ -111,7 +129,7 @@ pub fn nix_from_fdflags(fdflags: __wasi_fdflags_t) -> nix::fcntl::OFlag {
         nix_flags.insert(OFlag::O_NONBLOCK);
     }
     if fdflags & (__WASI_FDFLAG_RSYNC as __wasi_fdflags_t) != 0 {
-        nix_flags.insert(OFlag::O_RSYNC);
+        insert_o_rsync(&mut nix_flags);
     }
     if fdflags & (__WASI_FDFLAG_SYNC as __wasi_fdflags_t) != 0 {
         nix_flags.insert(OFlag::O_SYNC);
@@ -131,7 +149,7 @@ pub fn fdflags_from_nix(oflags: nix::fcntl::OFlag) -> __wasi_fdflags_t {
     if oflags.contains(OFlag::O_NONBLOCK) {
         fdflags |= __WASI_FDFLAG_NONBLOCK;
     }
-    if oflags.contains(OFlag::O_RSYNC) {
+    if contains_o_rsync(oflags) {
         fdflags |= __WASI_FDFLAG_RSYNC;
     }
     if oflags.contains(OFlag::O_SYNC) {

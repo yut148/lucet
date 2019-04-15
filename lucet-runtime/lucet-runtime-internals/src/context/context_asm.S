@@ -31,9 +31,11 @@
 
 .text
 .globl lucet_context_bootstrap
-.type lucet_context_bootstrap,@function
+.globl _lucet_context_bootstrap
+//.type lucet_context_bootstrap,@function
 .align 16
 lucet_context_bootstrap:
+_lucet_context_bootstrap:
 	/* Move each of the context-saved registers into the corresponding call
 	 * argument register. See lucet_register enum for docs  */
 	mov %r12, %rsi
@@ -43,27 +45,31 @@ lucet_context_bootstrap:
 	mov %rbx, %r9
 	/* the next thing on the stack is the guest function - return to it */
 	ret
-.size lucet_context_bootstrap,.-lucet_context_bootstrap
+//.size lucet_context_bootstrap,.-lucet_context_bootstrap
 
 
 .text
 .globl lucet_context_backstop
-.type lucet_context_backstop,@function
+.globl _lucet_context_backstop
+//.type lucet_context_backstop,@function
 .align 16
 lucet_context_backstop:
+_lucet_context_backstop:
     mov -16(%rbp), %rdi  /* parent context to arg 1 */
     mov -8(%rbp), %rsi  /* own context to arg 2 */
     mov %rax, (8*8 + 8*16 + 8*0)(%rdi) /* store return values before swapping back -- offset is offsetof(struct lucet_context, retvals) */
     mov %rdx, (8*8 + 8*16 + 8*1)(%rdi)
     movdqu %xmm0, (8*8 + 8*16 + 8*2)(%rdi) /* floating-point return value */
-    jmp lucet_context_swap@PLT
-.size lucet_context_backstop,.-lucet_context_backstop
+    jmp lucet_context_swap
+//.size lucet_context_backstop,.-lucet_context_backstop
 
 .text
 .globl lucet_context_swap
-.type lucet_context_swap,@function
+.globl _lucet_context_swap
+//.type lucet_context_swap,@function
 .align 16
 lucet_context_swap:
+_lucet_context_swap:
     // store everything in offsets from rdi (1st arg)
     mov %rbx, (0*8)(%rdi)
     mov %rsp, (1*8)(%rdi)
@@ -103,13 +109,15 @@ lucet_context_swap:
     movdqu (8*8 + 7*16)(%rsi), %xmm7
 
     ret
-.size lucet_context_swap,.-lucet_context_swap
+//.size lucet_context_swap,.-lucet_context_swap
 
 .text
 .globl lucet_context_set
-.type lucet_context_set,@function
+.globl _lucet_context_set
+//.type lucet_context_set,@function
 .align 16
 lucet_context_set:
+_lucet_context_set:
     // load everything from offsets from rdi (1st arg)
     mov (0*8)(%rdi), %rbx
     mov (1*8)(%rdi), %rsp
@@ -131,7 +139,7 @@ lucet_context_set:
     // load rdi from itself last
     mov (3*8)(%rdi), %rdi
     ret
-.size lucet_context_set,.-lucet_context_set
+//.size lucet_context_set,.-lucet_context_set
 
 /* Mark that we don't need executable stack. */
-.section .note.GNU-stack,"",%progbits
+//.section .note.GNU-stack,"",%progbits
